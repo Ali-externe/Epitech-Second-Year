@@ -1,0 +1,234 @@
+#!/bin/sh
+
+if [ "$1" == "" ] || [ "$1" == "-h" ]; then
+    expr "Usage: ./bdsh [OPTION]... [COMMAND] [REQUEST]
+OPTION:
+  -h				display usage
+  -f FILE			json database file
+  -j                json formated output for select command"
+fi
+
+if [ "$1" = "-f" ] && [ "$3" = "create" ] && [ "$4" == "table" ] && [ "$#" == 6 ]; then
+    if [ ! -f $2 ]; then
+        exit 1
+    fi
+    file=$(<$2)
+    table="  \"desc_$5\": [
+    \"$6\"
+  ]"
+    table=${table//,/\",
+    \"}
+    table="$table"
+    i=0
+    while ((1))
+    do
+        r="${file:i:1}"
+        if [ "$r" == "{" ]; then
+            break
+        fi
+        expr "$r"
+        ((i++))
+    done
+    ((i++))
+    declare -i len=${#file}
+    ((len--))
+    ((len--))
+    ((len--))
+    c="${file:len:1}"
+    if [ "$c" == "]" ]; then
+    file="${file:0:i}
+$table,${file:i}"
+$(>$2)
+expr "$file" >> $2
+    fi
+    if [ "$c" != "]" ]; then
+    file="${file:0:i}
+$table${file:i}"
+$(>$2)
+expr "$file" >> $2
+    fi
+fi
+
+if [ "$1" = "-f" ] && [ "$3" = "insert" ] && [ "$#" == 5 ]; then
+    if [ ! -f $2 ]; then
+        exit 1
+    fi
+    file=$(<$2)
+    search="\"data_$4\""
+    declare -i dat=${#search}
+    declare -i len=${#file}
+    p=0
+    m="0"
+    while ((1))
+    do
+        c="${file:p:dat}"
+        if [ "$c" == "$search" ]; then
+            expr "existe deja"
+            m="1"
+
+            break
+        fi
+        if [ "$p" == "$len" ]; then
+                break
+        fi
+        ((p++))
+    done
+    if [ "$m" == "0" ]; then
+    src="\"$5"
+    src=${src//=/\": \"}
+    src=${src//\",/\",
+      \"}
+    tablename=",
+  \"data_$4\": [
+    {
+      $src\"
+    }
+  ]"
+    declare -i len=${#file}
+    ((len--))
+    ((len--))
+    file="${file:0:len}$tablename${file:len}"
+    $(>$2)
+    expr "$file" >> $2
+fi
+fi
+
+if [ "$1" == "-f" ] && [ "$3" == "create" ] && [ "$#" == 4 ]; then
+    if [ -f $2 ]; then
+        exit 1
+    fi
+    expr "{
+}" >> $2
+fi
+
+
+
+
+if [ "$1" == "-f" ] && [ "$3" == "describe" ] && [ "$#" == 4 ]; then
+    if [ ! -f $2 ]; then
+        exit 1
+    fi
+    file=$(<$2)
+    desc="desc_"
+    search="\"$desc$4\""
+    declare -i len=${#search}
+    declare -i len2=${#file}
+    r="lol";
+    i=0
+    while ((1))
+    do
+        if [ "$i" == "$len2" ]; then
+            exit 1
+        fi
+        if [ "$r" == "$search" ]; then
+            break
+        fi
+        r="${file:i:$len}"
+        ((i++))
+    done
+    ((i++))
+    ((i++))
+    while ((1))
+    do
+        if [ "$r" == "[" ]; then
+            break
+        fi
+        r="${file:i:1}"
+        ((i++))
+    done
+    while ((1))
+    do
+        if [ "$r" == "\"" ]; then
+            break
+        fi
+        r="${file:i:1}"
+        ((i++))
+    done
+    ((i--))
+    result=""
+    while ((1))
+    do
+        r="${file:i:1}"
+        if [ "$r" == "]" ]; then
+            break
+        fi
+        if [ "$r" == "\"" ]; then
+            ((i++))
+            while ((1))
+            do
+                r="${file:i:1}"
+                if [ "$r" == "\"" ]; then
+                    result="$result"$'\n'
+                    break
+                fi
+                result="$result$r"
+                ((i++))
+            done
+        fi
+        ((i++))
+    done
+    expr "${result%?}"
+fi
+
+# if [ "$1" == "-f" ] && [ "$3" == "describe" ] && [ "$#" == 4 ]; then
+#     if [ ! -f $2 ]; then
+#         exit 1
+#     fi
+#     file=$(<$2)
+#     desc="desc_"
+#     search="$desc$4"
+#     declare -i len=${#search}
+#     declare -i len2=${#file}
+#     r="lol";
+#     i=0
+#     while ((1))
+#     do
+#         if [ "$i" == "$len2" ]; then
+#             exit 1
+#         fi
+#         if [ "$r" == "$search" ]; then
+#             break
+#         fi
+#         r="${file:i:$len}"
+#         ((i++))
+#     done
+#     ((i--))
+#     while ((1))
+#     do
+#         r="${file:i:1}"
+#         if [ "$r" == "[" ]; then
+#             break
+#         fi
+#         ((i++))
+#     done
+#     while ((1))
+#     do
+#         r="${file:i:1}"
+#         if [ "$r" == "\"" ]; then
+#             break
+#         fi
+#         ((i++))
+#     done
+#     while ((1))
+#     do
+#         if [ "${file:i:1}" == "]" ]; then
+#             break
+#         fi
+#         r="${file:i:1}"
+#         src="$src$r"
+#         ((i++))
+#     done
+#     i=0
+#     b=0
+#     src=${src//\",/
+# }
+#     src=${src//\"/}
+#     src=${src//
+# /}
+# expr "$src" | sed 's/^ *//' | sed 's/ *$//'
+# fi
+
+if [ "$1" == "-j" ] && ["$3" == ""]; then
+    file=$(<$2)
+    expr "$file"
+fi
