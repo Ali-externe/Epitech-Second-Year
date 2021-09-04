@@ -1,0 +1,365 @@
+#!/usr/bin/env python3
+
+import sys
+import array
+import csv
+import re
+import math
+
+def action(U_E, B_E, U_B, btc, eth, usdt, p_BTC_ETH,p_USDT_ETH, p_USDT_BTC):
+    UE = U_E
+    BE = B_E
+    UB = U_B
+    diff = 0
+    list_3lastUE = [0] * 3
+    list_3lastBE = [0] * 3
+    list_3lastUB = [0] * 3
+    buy_or_sell_UE = 0
+    buy_or_sell_BE = 0
+    buy_or_sell_UB = 0
+    ordre = []
+    yo = "yo"
+    lengthUE = len(UE)
+    lengthBE = len(BE)
+    lengthUB = len(UB)
+    # # #print (length)
+    ll = lengthUE - 3
+    f = 0
+    j = 0
+    while f < lengthUE:
+        if f >= lengthUE - 3:
+            list_3lastUE[j] = UE[f]
+            j += 1
+        f += 1
+    f = 0
+    j = 0
+    while f < lengthBE:
+        if f >= lengthBE - 3:
+            list_3lastBE[j] = BE[f]
+            j += 1
+        f += 1
+    f = 0
+    j = 0
+    while f < lengthUB:
+        if f >= lengthUB - 3:
+            list_3lastUB[j] = UB[f]
+            j += 1
+        f += 1
+    # # print (ll)
+    #del UE[:ll]
+    buy_or_sell_UE = buy_or_sell(list_3lastUE)
+    buy_or_sell_BE = buy_or_sell(list_3lastBE)
+    buy_or_sell_UB = buy_or_sell(list_3lastUB)
+    ordre = difference(list_3lastUE, list_3lastBE, list_3lastUB)
+    #print(usdt)
+    #print(p_USDT_ETH)
+    if ordre[0] == 1:
+        diff = abs(list_3lastUE[0] - list_3lastUE[2])
+        diff = diff * 0.001
+        if (float(diff) <= 0.001):
+            diff = 0.01
+        if buy_or_sell_UE == 2 and usdt >= diff * p_USDT_ETH:
+            print("buy USDT_ETH", round(diff, 8))
+            yo = "no"
+        elif buy_or_sell_UE == 1 and eth >= diff:
+            print("sell USDT_ETH", round(diff, 8))
+            yo = "no"
+        else:
+            if ordre[1] == 2:
+                diff = abs(list_3lastBE[0] - list_3lastBE[2])
+                diff = diff * 0.001
+                if (float(diff) <= 0.001): diff = 0.01
+                if buy_or_sell_BE == 2 and btc >= diff * p_BTC_ETH:
+                    print("buy BTC_ETH", round(diff, 8))
+                    yo = "no"
+                elif buy_or_sell_BE == 1 and eth >= diff:
+                    print("sell BTC_ETH", round(diff, 8))
+                    yo = "no"
+            elif ordre[1] == 3:
+                diff = abs(list_3lastUB[0] - list_3lastUB[2])
+                diff = diff * 0.001
+                if (float(diff) <= 0.001): diff = 0.01
+                if buy_or_sell_UB == 2 and float(usdt) >= diff * p_USDT_BTC:
+                    print("buy USDT_BTC", round(diff, 8))
+                    yo = "no"
+                elif buy_or_sell_UB == 1 and btc >= diff:
+                    print("sell USDT_BTC", round(diff, 8))
+                    yo = "no"
+                else:
+                    if ordre[2] == 2:
+                        diff = abs(list_3lastBE[0] - list_3lastBE[2])
+                        diff = diff * 0.001
+                        if (float(diff) <= 0.001): diff = 0.01
+                        if buy_or_sell_BE == 2 and btc >= diff * p_BTC_ETH:
+                            print("buy BTC_ETH", round(diff, 8))
+                            yo = "no"
+                        elif buy_or_sell_BE == 1 and eth >= diff:
+                            print("sell BTC_ETH", round(diff, 8))
+                            yo = "no"
+                        else:
+                            print("pass")
+                            yo = "no"
+                            return 0
+    if ordre[0] == 2:
+        diff = abs(list_3lastBE[0] - list_3lastBE[2])
+        diff = diff * 0.001
+        if (float(diff) <= 0.001): diff = 0.01
+        if buy_or_sell_BE == 2 and float(btc) >= float(diff * p_BTC_ETH):
+            print("buy BTC_ETH", round(diff, 8))
+            yo = "no"
+        elif buy_or_sell_BE == 1 and eth >= diff:
+            print("sell BTC_ETH", round(diff, 8))
+            yo = "no"
+        else:
+            if ordre[1] == 1:
+                diff = abs(list_3lastUE[0] - list_3lastUE[2])
+                diff = diff * 0.001
+                if (float(diff) <= 0.001): diff = 0.01
+                if buy_or_sell_UE == 2 and usdt >= diff * p_USDT_ETH:
+                    print("buy USDT_ETH", round(diff, 8))
+                    yo = "no"
+                elif buy_or_sell_UE == 1 and eth >= diff:
+                    print("sell USDT_ETH", round(diff, 8))
+                    yo = "no"
+            elif ordre[1] == 3:
+                diff = abs(list_3lastUB[0] - list_3lastUB[2])
+                diff = diff * 0.001
+                if (float(diff) <= 0.001): diff = 0.01
+                if buy_or_sell_UB == 2 and usdt >= diff * p_USDT_BTC:
+                    print("buy USDT_BTC", round(diff, 8))
+                    yo = "no"
+                elif buy_or_sell_UB == 1 and btc >= diff:
+                    print("sell USDT_BTC", round(diff, 8))
+                    yo = "no"
+                else:
+                    if ordre[2] == 1:
+                        diff = abs(list_3lastUE[0] - list_3lastUE[2])
+                        diff = diff * 0.001
+                        if (float(diff) <= 0.001): diff = 0.01
+
+                        if buy_or_sell_UE == 2 and usdt >= diff * p_USDT_ETH:
+                            print("buy USDT_ETH", round(diff, 8))
+                            yo = "no"
+                        elif buy_or_sell_UE == 1 and eth >= diff:
+                            print("sell USDT_ETH", round(diff, 8))
+                            yo = "no"
+                        else:
+                            print("pass")
+                            yo = "no"
+                            return 0
+    if ordre[0] == 3:
+        diff = abs(list_3lastUB[0] - list_3lastUB[2])
+        diff = diff * 0.001
+        if (float(diff) <= 0.001):
+            diff = 0.01
+        if buy_or_sell_UB == 2 and float(usdt) >= float(diff * p_USDT_BTC):
+            print("buy USDT_BTC", round(diff, 8))
+            yo = "no"
+        elif buy_or_sell_UB == 1 and btc >= diff:
+            print("sell USDT_BTC", round(diff, 8))
+            yo = "no"
+        else:
+            if ordre[1] == 1:
+                diff = abs(list_3lastUE[0] - list_3lastUE[2])
+                diff = diff * 0.001
+                if (float(diff) <= 0.001): diff = 0.01
+                if buy_or_sell_UE == 2 and usdt >= diff * p_USDT_ETH:
+                    print("buy USDT_ETH", round(diff, 8))
+                    yo = "no"
+                elif buy_or_sell_UE == 1 and eth >= diff:
+                    print("sell USDT_ETH", round(diff, 8))
+                    yo = "no"
+            elif ordre[1] == 2:
+                diff = abs(list_3lastBE[0] - list_3lastBE[2])
+                diff = diff * 0.001
+                if (float(diff) <= 0.001):
+                    diff = 0.01
+                if buy_or_sell_BE == 2 and diff >= 0.0001 and btc >= diff * p_BTC_ETH:
+                    print("buy BTC_ETH", round(diff, 8))
+                    yo = "no"
+                elif buy_or_sell_BE == 1 and eth >= diff:
+                    print("sell BTC_ETH", round(diff, 8))
+                    yo = "no"
+                else:
+                    if ordre[2] == 1:
+                        diff = abs(list_3lastUE[0] - list_3lastUE[2])
+                        diff = diff * 0.001
+                        if (float(diff) <= 0.001): diff = 0.01
+                        if buy_or_sell_UE == 2 and usdt >= diff * p_USDT_ETH:
+                            print("buy USDT_ETH", round(diff, 8))
+                            yo = "no"
+                        elif buy_or_sell_UE == 1 and eth >= diff:
+                            print("sell USDT_ETH", round(diff, 8))
+                            yo = "no"
+                        else:
+                            print("pass")
+                            yo = "no"
+                            return 0
+    if yo == "yo":
+        print("pass")
+        return 0
+
+def difference(UE, BE, UB):
+    diffUE = abs(UE[0] - UE[2])
+    diffBE = abs(BE[0] - BE[2])
+    diffUB = abs(UB[0] - UB[2])
+    order = [0] * 3
+
+    if diffUE > diffBE and diffUE > diffUB:   #le plus haut
+        order[0] = 1
+    if diffBE > diffUE and diffBE > diffUB:
+        order[0] = 2
+    if diffUB > diffUE and diffUB > diffBE:
+        order[0] = 3
+    if diffUE > diffBE and diffUE < diffUB:   #deuxième
+        order[1] = 1
+    if diffUE < diffBE and diffUE > diffUB:
+        order[1] = 1
+    if diffBE > diffUE and diffBE < diffUB:
+        order[1] = 2
+    if diffBE < diffUE and diffBE > diffUB:
+        order[1] = 2
+    if diffUB > diffUE and diffUB < diffBE:
+        order[1] = 3
+    if diffUB < diffUE and diffUB > diffBE:
+        order[1] = 3
+    if diffUE < diffBE and diffUE < diffUB:   #le plus bas
+        order[2] = 1
+    if diffBE < diffUE and diffBE < diffUB:
+        order[2] = 2
+    if diffUB < diffUE and diffUB < diffBE:
+        order[2] = 3
+    return order
+
+
+def buy_or_sell(tab):
+    if tab[1] > tab[0]:
+        if tab[2] > tab[1]:
+            return 1
+    elif tab[1] < tab[0]:
+        if tab[2] < tab[1]:
+            return 2
+    return 0
+
+def bigest(num1, num2, num3):
+    largest=0
+    if (num1 >= num2) and (num1 >= num3):
+        largest = num1
+    elif (num2 >= num1) and (num2 >= num3):
+        largest = num2
+    else:
+        largest = num3
+    return largest
+def algo(tab):
+    length = len(tab)
+    i = 0
+    o=0
+    ll= length - 8
+    del tab[:ll]
+    length = len(tab)
+    i = 0
+    a=0
+    b=0
+    moyenne = 0
+    nbdev = 0
+    compare = 0
+    stock = 0
+    state = 0
+    while i < length:
+        if i == 1:
+            if compare < tab[i]:
+                state = 1
+            else:
+                state = 0
+        if i > 1:
+            if state == 1:
+                if compare > tab[i]:
+                    nbdev += 1
+                    state = 0
+            elif state == 0:
+                if compare < tab[i]:
+                    nbdev += 1
+                    state = 1
+        compare = tab[i]
+        i += 1
+    i = 0
+    tab2 = [0] * length
+    while i < length:
+        moyenne += tab[i]
+        i += 1
+    moyenne = moyenne / length
+    i = 0
+    while i < length:
+        tab2[i] = tab[i] - moyenne
+        tab2[i] = tab2[i]**2
+        i += 1
+    i = 0
+    final = 0
+    while i < length:
+        final += tab2[i]
+        i += 1
+    final = math.sqrt((final / length))
+    upperboll = moyenne + (nbdev * final)
+    middleboll = moyenne
+    lowerboll = moyenne - (nbdev * final)
+    a = upperboll - middleboll
+    return middleboll
+
+if __name__ == '__main__':
+    try:
+        liste = []
+        saver = []
+        timebank=0
+        time_per_move=0
+        candle_interval=0
+        candle_format=[]
+        candles_total=0
+        candles_given=0
+        initial_stack=0
+        transaction_fee_percent=0
+        next_candles=[]
+        BTC_ETH_all_candles=[]
+        USDT_BTC_all_candles=[]
+        USDT_ETH_all_candles=[]
+        BTC_ETH_candles=[]
+        USDT_BTC_candles=[]
+        USDT_ETH_candles=[]
+        stacks=[]
+        simflouz=[]
+        USDT_ETH=[]
+        BTC_ETH=[]
+        USDT_BTC=[]
+        largest=0
+        btc = 0
+        eth = 0
+        usdt = 0
+        line = ""
+        while True:
+            line = input()
+            liste = line.split(" ")
+            if (liste[0] == "update"):
+                if (liste[2] == "stacks"):
+                    liste[3] = liste[3].replace(':', ',')
+                    simflouz = liste[3].split(",")
+                    btc = float(simflouz[1])
+                    eth = float(simflouz[3])
+                    usdt = float(simflouz[5])
+                if (liste[2] == "next_candles"):
+                    liste[3] = liste[3].replace(';', ',')
+                    next_candles = liste[3].split(",")
+                    BTC_ETH_candles = float(next_candles[5])
+                    USDT_ETH_candles = float(next_candles[12])
+                    USDT_BTC_candles = float(next_candles[19])
+                    BTC_ETH_all_candles.append(BTC_ETH_candles)
+                    USDT_ETH_all_candles.append(USDT_ETH_candles)
+                    USDT_BTC_all_candles.append(USDT_BTC_candles)
+            if (liste[0] == "action"):
+                #print(timebank)
+                timebank +=1
+                USDT_ETH.append(algo(USDT_ETH_all_candles))
+                BTC_ETH.append(algo(BTC_ETH_all_candles))
+                USDT_BTC.append(algo(USDT_BTC_all_candles))
+                action(USDT_ETH, BTC_ETH, USDT_BTC, btc, eth, usdt, BTC_ETH_candles, USDT_ETH_candles, USDT_BTC_candles)
+            sys.stdin.flush()
+    except KeyboardInterrupt:
+        sys.exit()
