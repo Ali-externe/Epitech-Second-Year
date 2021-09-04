@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+
+import sys
+import array
+import numpy as np
+
+if (sys.argv[1] == "-h"):
+    print("SYNOPSIS\n    ./groundhog period\n\nDESCRIPTION\n    period        the number of days defining a period")
+    sys.exit()
+arg = int(sys.argv[1])
+try:
+    a=0
+    snb = 0
+    array_test = []
+    g="nan"
+    r="nan"
+    s="nan"
+    pourcent ='%'
+    for line in sys.stdin:
+        array_test.insert(a, float(line))
+        a += 1
+        if (line == "STOP\n"):
+            sys.exit()
+        if (a < arg):
+            print("g=%s        r=%s%c        s=%s" %(g,r,pourcent,s))
+        if (a == arg):
+            a -= 1
+            snb = np.std(array_test)
+            array_test.pop(0)
+            print("g=%s        r=%s%c        s=%.2f" %(g,r,pourcent,snb))
+except KeyboardInterrupt:
+    sys.exit()
